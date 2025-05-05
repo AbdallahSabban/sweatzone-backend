@@ -1,12 +1,17 @@
 const express = require('express');
 const app = express();
 const port = 3000;
+const http = require('http');
+const setupWebSocket = require('./websocket');
+
+const server = http.createServer(app);
+setupWebSocket(server);
 
 // Empty array of events to display on home page
 let events = [];
 
 // Middleware to parse JSON requests
-app.use(express.json());
+app.use(express.json());;
 
 // Sample GET endpoint
 app.get('/api/hello', (req, res) => {
@@ -154,6 +159,6 @@ app.post('/api/events', (req, res) => {
 });
 
 // Start the server
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
