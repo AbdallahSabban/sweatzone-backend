@@ -13,12 +13,7 @@ app.get('/api/hello', (req, res) => {
     res.json({ message: 'SweatZone' });
 });
 
-// ... (previous imports and setup remain the same)
 
-// Sample GET endpoint
-app.get('/api/hello', (req, res) => {
-    res.json({ message: 'SweatZone' });
-});
 
 // GET endpoint to fetch all events
 app.get('/api/events', (req, res) => {
@@ -28,8 +23,25 @@ app.get('/api/events', (req, res) => {
     });
 });
 
+// GET endpoint to fetch a specific event by ID
+app.get('/api/events/:id', (req, res) => {
+    const eventId = parseInt(req.params.id);
+    const event = events.find((e) => e.id === eventId);
+
+    if (!event) {
+        return res.status(404).json({
+            message: 'Event not found',
+        });
+    }
+
+    res.status(200).json({
+        message: 'Event fetched successfully',
+        event: event,
+    });
+});
+
+
 // POST endpoint to handle event creation
-// ... (rest of the file remains the same)
 
 // Function to generate a single-elimination bracket
 function generateSingleEliminationBracket(participants) {
