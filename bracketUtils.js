@@ -1,4 +1,4 @@
-function advanceWinnerToNextRound(event, match) {
+function advanceWinnerToNextRound(event, match, broadcastMatchUpdate, eventId) {
     const nextRoundNumber = match.round + 1;
     const nextRoundMatches = event.matches.filter(m => m.round === nextRoundNumber);
 
@@ -21,9 +21,14 @@ function advanceWinnerToNextRound(event, match) {
         nextMatch.player2 = match.winner;
     } else {
         console.warn('Next match already has both players.');
+        return;
     }
 
     console.log(`Advanced winner ${match.winner} to match ${nextMatch.id}`);
+
+    // Broadcast update to frontend
+    broadcastMatchUpdate(eventId, nextMatch);
+    console.log(`Broadcasted next match update for match ${nextMatch.id}`);
 }
 
 module.exports = {

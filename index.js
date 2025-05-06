@@ -186,7 +186,8 @@ app.patch('/api/events/:eventId/matches/:matchId', (req, res) => {
     console.log('Updated match:', match);
 
     // Advance winner to next round
-    advanceWinnerToNextRound(event, match);
+    advanceWinnerToNextRound(event, match, broadcastMatchUpdate, eventId);
+
 
     // Broadcast the match winner update via WebSocket
     broadcastMatchUpdate(eventId, match);
