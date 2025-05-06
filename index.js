@@ -4,6 +4,8 @@ const port = 3000;
 const http = require('http');
 const setupWebSocket = require('./websocket');
 const { broadcastMatchUpdate } = require('./websocket');
+const { advanceWinnerToNextRound } = require('./bracketUtils');
+
 
 const server = http.createServer(app);
 setupWebSocket(server);
@@ -182,6 +184,9 @@ app.patch('/api/events/:eventId/matches/:matchId', (req, res) => {
 
     match.winner = winner;
     console.log('Updated match:', match);
+
+    // Advance winner to next round
+    advanceWinnerToNextRound(event, match);
 
     // Broadcast the match winner update via WebSocket
     broadcastMatchUpdate(eventId, match);
