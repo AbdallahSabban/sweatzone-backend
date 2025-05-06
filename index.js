@@ -158,6 +158,36 @@ app.post('/api/events', (req, res) => {
     });
 });
 
+// PATCH endpoint to update the winner of a match
+app.patch('/api/events/:eventId/matches/:matchId/winner', (req, res) => {
+    const eventId = parseInt(req.params.eventId);
+    const matchId = parseInt(req.params.matchId);
+    const { winner } = req.body;
+
+    const event = events.find(e => e.id === eventId);
+    if (!event) {
+        return res.status(404).json({ message: 'Event not found.' });
+    }
+
+    const match = event.matches.find(m => m.id === matchId);
+    if (!match) {
+        return res.status(404).json({ message: 'Match not found.' });
+    }
+
+    if (!winner || (winner !== match.player1 && winner !== match.player2)) {
+        return res.status(400).json({ message: 'Winner must be one of the players.' });
+    }
+
+    match.winner = winner;
+
+    console.log(`Winner updated for match ${matchId} in event ${eventId}: ${winner}`);
+
+    return res.status(200).json({
+        message: 'Winner updated successfully.',
+        match: match,
+    });
+});
+
 // Start the server
 server.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
