@@ -3,6 +3,7 @@ const app = express();
 const port = 3000;
 const http = require('http');
 const setupWebSocket = require('./websocket');
+const { broadcastMatchUpdate } = require('./websocket');
 
 const server = http.createServer(app);
 setupWebSocket(server);
@@ -11,14 +12,12 @@ setupWebSocket(server);
 let events = [];
 
 // Middleware to parse JSON requests
-app.use(express.json());;
+app.use(express.json());
 
 // Sample GET endpoint
 app.get('/api/hello', (req, res) => {
     res.json({ message: 'SweatZone' });
 });
-
-
 
 // GET endpoint to fetch all events
 app.get('/api/events', (req, res) => {
@@ -44,7 +43,6 @@ app.get('/api/events/:id', (req, res) => {
         event: event,
     });
 });
-
 
 // POST endpoint to handle event creation
 
@@ -159,32 +157,38 @@ app.post('/api/events', (req, res) => {
 });
 
 // PATCH endpoint to update the winner of a match
-app.patch('/api/events/:eventId/matches/:matchId/winner', (req, res) => {
-    const eventId = parseInt(req.params.eventId);
-    const matchId = parseInt(req.params.matchId);
+app.patch('/api/events/:eventId/matches/:matchId', (req, res) => {
+    const { eventId, matchId } = req.params;
     const { winner } = req.body;
 
-    const event = events.find(e => e.id === eventId);
+    console.log(`Received PATCH request: eventId = ${eventId}, matchId = ${matchId}, winner = ${winner}`);
+
+    const event = events.find((e) => e.id === parseInt(eventId));
     if (!event) {
-        return res.status(404).json({ message: 'Event not found.' });
+        console.error('Event not found');
+        return res.status(404).json({ message: 'Event not found' });
     }
 
-    const match = event.matches.find(m => m.id === matchId);
+    const match = event.matches.find((m) => m.id === parseInt(matchId));
     if (!match) {
-        return res.status(404).json({ message: 'Match not found.' });
+        console.error('Match not found');
+        return res.status(404).json({ message: 'Match not found' });
     }
 
     if (!winner || (winner !== match.player1 && winner !== match.player2)) {
-        return res.status(400).json({ message: 'Winner must be one of the players.' });
+        console.error('Invalid winner');
+        return res.status(400).json({ message: 'Invalid winner' });
     }
 
     match.winner = winner;
+    console.log('Updated match:', match);
 
-    console.log(`Winner updated for match ${matchId} in event ${eventId}: ${winner}`);
-
-    return res.status(200).json({
-        message: 'Winner updated successfully.',
-        match: match,
+    // Broadcast the match winner update via WebSocket
+    broadcastMatchUpdate(eventId, match);
+    console.log('Match winner updated via WebSocket');
+    res.status(200).json({
+        message: 'Match winner updated successfully',
+        match,
     });
 });
 
